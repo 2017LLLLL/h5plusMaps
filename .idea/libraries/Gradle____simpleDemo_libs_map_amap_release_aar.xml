@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: ./simpleDemo/libs/map-amap-release.aar">
+    <CLASSES>
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/c5a43fd1d090e476e1954e9f0c76763f/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/c5a43fd1d090e476e1954e9f0c76763f/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/c5a43fd1d090e476e1954e9f0c76763f/res" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

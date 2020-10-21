@@ -1,0 +1,4 @@
+# Referenced at F:\ap\HBuilder-Integrate-AS-v1.0\simpleDemo\build\intermediates\merged_manifests\debug\AndroidManifest.xml:57
+-keep class android.support.v4.app.CoreComponentFactory { <init>(); }
+# Referenced at F:\ap\HBuilder-Integrate-AS-v1.0\simpleDemo\build\intermediates\merged_manifests\debug\AndroidManifest.xml:57
+-keep class io.dcloud.application.DCloudApplication { <init>(); }

@@ -1,0 +1,7 @@
+#Tue Oct 20 23:59:15 CST 2020
+base.0=F\:\\ap\\HBuilder-Integrate-AS-v1.0\\simpleDemo\\build\\intermediates\\dex\\release\\mergeDexRelease\\out
+path.1=classes2.dex
+renamed.1=classes2.dex
+path.0=classes.dex
+renamed.0=classes.dex
+base.1=F\:\\ap\\HBuilder-Integrate-AS-v1.0\\simpleDemo\\build\\intermediates\\dex\\release\\mergeDexRelease\\out

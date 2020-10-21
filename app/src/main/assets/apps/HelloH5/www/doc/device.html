@@ -1,0 +1,304 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="HandheldFriendly" content="true">
+<meta name="MobileOptimized" content="320">
+<title>Device Document</title>
+<link rel="stylesheet" type="text/css" href="res/doc.css" charset="utf-8">
+<link rel="stylesheet" type="text/css" href="res/prettify.sons.css" charset="utf-8">
+<script type="text/javascript" src="res/doc.js" charset="utf-8"></script><script type="text/javascript" src="res/prettify.js" charset="utf-8"></script>
+</head>
+<body><div id="content" class="content">
+<h1><a name="plus.device">device</a></h1>
+<p>Device模块管理设备信息，用于获取手机设备的相关信息，如IMEI、IMSI、型号、厂商等。通过plus.device获取设备信息管理对象。</p>
+<h2>属性：</h2>
+<ul>
+<li>
+<a href="#plus.device.imei">imei</a>: 设备的国际移动设备身份码</li>
+<li>
+<a href="#plus.device.imsi">imsi</a>: 设备的国际移动用户识别码</li>
+<li>
+<a href="#plus.device.model">model</a>: 设备的型号</li>
+<li>
+<a href="#plus.device.vendor">vendor</a>: 设备的生产厂商</li>
+<li>
+<a href="#plus.device.uuid">uuid</a>: 设备的唯一标识</li>
+</ul>
+<h2>方法：</h2>
+<ul>
+<li>
+<a href="#plus.device.beep">beep</a>: 发出蜂鸣声</li>
+<li>
+<a href="#plus.device.dial">dial</a>: 拨打电话</li>
+<li>
+<a href="#plus.device.getInfo">getInfo</a>: 获取设备信息</li>
+<li>
+<a href="#plus.device.getOAID">getOAID</a>: 获取匿名设备标识符</li>
+<li>
+<a href="#plus.device.getVAID">getVAID</a>: 获取开发者匿名设备标识符</li>
+<li>
+<a href="#plus.device.getAAID">getAAID</a>: 获取应用匿名设备标识符</li>
+<li>
+<a href="#plus.device.getVolume">getVolume</a>: 获取设备的系统音量</li>
+<li>
+<a href="#plus.device.isWakelock">isWakelock</a>: 获取程序是否一直保持唤醒（屏幕常亮）状态</li>
+<li>
+<a href="#plus.device.setWakelock">setWakelock</a>: 设置应用是否保持唤醒（屏幕常亮）状态</li>
+<li>
+<a href="#plus.device.setVolume">setVolume</a>: 设置设备的系统音量</li>
+<li>
+<a href="#plus.device.vibrate">vibrate</a>: 设备振动</li>
+</ul>
+<h2>对象：</h2>
+<ul>
+<li>
+<a href="#plus.device.DeviceInfo">DeviceInfo</a>: 设备信息对象</li>
+<li>
+<a href="#plus.screen">screen</a>: Screen模块管理设备屏幕信息</li>
+<li>
+<a href="#plus.display">display</a>: Display模块管理应用可使用的显示区域信息</li>
+<li>
+<a href="#plus.networkinfo">networkinfo</a>: networkinfo模块用于获取网络信息</li>
+<li>
+<a href="#plus.os">os</a>: OS模块管理操作系统信息</li>
+</ul>
+<h2>回调方法：</h2>
+<ul>
+<li>
+<a href="#plus.device.DeviceSuccessCallback">DeviceSuccessCallback</a>: 成功回调函数</li>
+<li>
+<a href="#plus.device.DeviceFailCallback">DeviceFailCallback</a>: 失败回调函数</li>
+<li>
+<a href="#plus.device.DeviceCompleteCallback">DeviceCompleteCallback</a>: 操作完成回调函数</li>
+</ul>
+<h2>权限：</h2>
+<p>5+功能模块（permissions）</p>
+<pre class="prettyprint linenums">
+{
+// ...
+"permissions":{
+	// ...
+	"Device": {
+		"description": "设备信息"
+	}
+}
+}
+			</pre>
+<h1><a name="plus.device.DeviceInfo">DeviceInfo</a></h1>
+<p>设备信息对象</p>
+<pre class="prettyprint linenums">
+interface plus.device.DeviceInfo {
+	attribute String imei;
+	attribute String imsi;
+	attribute String uuid;
+}
+				</pre>
+<h2>属性：</h2>
+<ul>
+<li>imei: <em>(<font class="type">String</font>
+	类型
+)</em>设备的国际移动设备身份码<br><p>
+	如果设备不支持或无法获取（如用户未授权）则返回空字符串。
+	如果设备存在多个身份码，则以“,”字符分割拼接，如“862470039452950,862470039452943”。
+						</p>
+</li>
+<li>imsi: <em>(<font class="type">Array</font>[
+				<font class="type">String</font>
+				]
+			
+	类型
+)</em>设备的国际移动用户识别码<br><p>
+	字符串数组类型，获取设备上插入SIM的国际移动设备身份码。
+	如果设备支持多卡模式则返回所有SIM身份码。
+	如果设备不支持或没有插入SIM卡则返回空数组。
+						</p>
+</li>
+<li>uuid: <em>(<font class="type">String</font>
+	类型
+)</em>设备标识<br><p>
+	设备的唯一标识号。
+						</p>
+</li>
+</ul>
+<h1><a name="plus.screen">screen</a></h1>
+<p>Screen模块管理设备屏幕信息</p>
+<pre class="prettyprint linenums">
+interface plus.screen {
+	attribute String dpiX;
+	attribute String dpiY;
+	attribute Number height;
+	attribute Number width;
+	attribute Number resolutionHeight;
+	attribute Number resolutionWidth;
+	attribute Number scale;
+	
+	function void setBrightness(brightness);
+	function Number getBrightness();
+	function void lockOrientation(orientation);
+	function void unlockOrientation();
+}
+				</pre>
+<h2>属性：</h2>
+<ul>
+<li>
+<a href="#plus.screen.dpiX">dpiX</a>: 设备屏幕水平方向的密度</li>
+<li>
+<a href="#plus.screen.dpiY">dpiY</a>: 设备屏幕垂直方向的密度</li>
+<li>
+<a href="#plus.screen.height">height</a>: 屏幕高度物理分辨率</li>
+<li>
+<a href="#plus.screen.width">width</a>: 屏幕宽度物理分辨率</li>
+<li>
+<a href="#plus.screen.resolutionHeight">resolutionHeight</a>: 屏幕高度逻辑分辨率</li>
+<li>
+<a href="#plus.screen.resolutionWidth">resolutionWidth</a>: 屏幕宽度逻辑分辨率</li>
+<li>
+<a href="#plus.screen.scale">scale</a>: 逻辑分辨率与物理分辨率的缩放比例</li>
+</ul>
+<h2>方法：</h2>
+<ul>
+<li>
+<a href="#plus.screen.setBrightness">setBrightness</a>: 设置屏幕亮度</li>
+<li>
+<a href="#plus.screen.getBrightness">getBrightness</a>: 获取屏幕亮度值</li>
+<li>
+<a href="#plus.screen.lockOrientation">lockOrientation</a>: 锁定屏幕方向</li>
+<li>
+<a href="#plus.screen.unlockOrientation">unlockOrientation</a>: 解除锁定屏幕方向</li>
+</ul>
+<h1><a name="plus.display">display</a></h1>
+<p>Display模块管理应用可使用的显示区域信息</p>
+<pre class="prettyprint linenums">
+interface plus.display {
+	attribute Number resolutionHeight;
+	attribute Number resolutionWidth;
+}
+				</pre>
+<h2>属性：</h2>
+<ul>
+<li>
+<a href="#plus.display.resolutionHeight">resolutionHeight</a>: 应用可使用的屏幕高度逻辑分辨率</li>
+<li>
+<a href="#plus.display.resolutionWidth">resolutionWidth</a>: 应用可使用的屏幕宽度逻辑分辨率</li>
+</ul>
+<h1><a name="plus.networkinfo">networkinfo</a></h1>
+<p>networkinfo模块用于获取网络信息</p>
+<pre class="prettyprint linenums">
+interface plus.networkinfo {
+	const attribute Number CONNECTION_UNKNOW = 0;
+	const attribute Number CONNECTION_NONE = 1;
+	const attribute Number CONNECTION_ETHERNET = 2;
+	const attribute Number CONNECTION_WIFI = 3;
+	const attribute Number CONNECTION_CELL2G = 4;
+	const attribute Number CONNECTION_CELL3G = 5;
+	const attribute Number CONNECTION_CELL4G = 6;
+	
+	function Number getCurrentType();
+}
+				</pre>
+<h2>常量：</h2>
+<ul>
+<li>
+<a href="#plus.networkinfo.CONNECTION_UNKNOW">CONNECTION_UNKNOW</a>: 网络连接状态未知</li>
+<li>
+<a href="#plus.networkinfo.CONNECTION_NONE">CONNECTION_NONE</a>: 未连接网络</li>
+<li>
+<a href="#plus.networkinfo.CONNECTION_ETHERNET">CONNECTION_ETHERNET</a>: 有线网络</li>
+<li>
+<a href="#plus.networkinfo.CONNECTION_WIFI">CONNECTION_WIFI</a>: 无线WIFI网络</li>
+<li>
+<a href="#plus.networkinfo.CONNECTION_CELL2G">CONNECTION_CELL2G</a>: 蜂窝移动2G网络</li>
+<li>
+<a href="#plus.networkinfo.CONNECTION_CELL3G">CONNECTION_CELL3G</a>: 蜂窝移动3G网络</li>
+<li>
+<a href="#plus.networkinfo.CONNECTION_CELL4G">CONNECTION_CELL4G</a>: 蜂窝移动4G网络</li>
+</ul>
+<h2>方法：</h2>
+<ul><li>
+<a href="#plus.networkinfo.getCurrentType">getCurrentType</a>: 获取设备当前连接的网络类型</li></ul>
+<h1><a name="plus.os">os</a></h1>
+<p>OS模块管理操作系统信息</p>
+<pre class="prettyprint linenums">
+interface plus.os {
+	attribute String language;
+	attribute String name;
+	attribute String vendor;
+	attribute String version;
+}
+				</pre>
+<h2>属性：</h2>
+<ul>
+<li>
+<a href="#plus.os.language">language</a>: 系统语言信息</li>
+<li>
+<a href="#plus.os.name">name</a>: 系统的名称</li>
+<li>
+<a href="#plus.os.vendor">vendor</a>: 系统的供应商信息</li>
+<li>
+<a href="#plus.os.version">version</a>: 系统版本信息</li>
+</ul>
+<h1><a name="plus.device.DeviceSuccessCallback">DeviceSuccessCallback</a></h1>
+<p>成功回调函数</p>
+<pre class="prettyprint linenums">
+void onSuccess(JSON event){
+}
+				</pre>
+<h2>说明：</h2>
+<p class="des">
+	不同接口触发的成功回调参数event包含的属性存在差异，具体参考对应的接口描述说明。
+				</p>
+<h2>参数：</h2>
+<ul><li>event: 
+		<em>(
+			<font class="type">JSON</font>
+			)
+			必选 </em>回调参数<br>
+	回调参数包含的属性由调用接口决定，具体参考对应的接口描述说明。
+						</li></ul>
+<h2>返回值：</h2>
+<font class="type">void</font>
+			: 无<h1><a name="plus.device.DeviceFailCallback">DeviceFailCallback</a></h1>
+<p>失败回调函数</p>
+<pre class="prettyprint linenums">
+function void onFail(Exception error){
+	// Handle error
+	var code = error.code; // 错误编码
+	var message = error.message; // 错误描述信息
+}
+				</pre>
+<h2>参数：</h2>
+<ul><li>error: 
+		<em>(
+			<font class="type">Exception</font>
+			)
+			必选 </em>回调参数，错误信息<br>
+	可通过error.code（Number类型）获取错误编码；
+	可通过error.message（String类型）获取错误描述信息。
+						</li></ul>
+<h2>返回值：</h2>
+<font class="type">void</font>
+			: 无<h1><a name="plus.device.DeviceCompleteCallback">DeviceCompleteCallback</a></h1>
+<p>操作完成回调函数</p>
+<pre class="prettyprint linenums">
+function void onComplete(JSON event){
+}
+				</pre>
+<h2>说明：</h2>
+<p class="des">
+	调用成功或失败都会触发此回调。
+				</p>
+<h2>参数：</h2>
+<ul><li>event: 
+		<em>(
+			<font class="type">JSON</font>
+			)
+			可选 </em>回调参数<br>
+	调用成功时回调参数与DeviceSuccessCallback一致，调用失败时回调参数与DeviceFailCallback一致。
+						</li></ul>
+<h2>返回值：</h2>
+<font class="type">void</font>
+			: 无<br><br>
+</div></body>
+</html>

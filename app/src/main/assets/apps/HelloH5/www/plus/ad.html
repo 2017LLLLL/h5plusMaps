@@ -1,0 +1,111 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+		<meta name="misapplication-tap-highlight" content="no"/>
+		<meta name="HandheldFriendly" content="true"/>
+		<meta name="MobileOptimized" content="320"/>
+		<title>Hello H5+</title>
+		<script type="text/javascript" src="../js/common.js"></script>
+		<script type="text/javascript">
+var adDom = null;
+// DOMContentloaded事件处理
+document.addEventListener('DOMContentLoaded', function(){
+  //获取占位div元素 
+	adDom = document.getElementById('ad');
+}, false);
+
+var adView = null;
+//创建并渲染广告
+function doCreateAd(){
+  //创建AdView控件
+  adView = plus.ad.createAdView({
+    top:adDom.offsetTop+'px',
+    left:'0px',
+    width:'100%',
+    height:'0px',
+    position: 'static'
+  });
+  //将AdView添加到Webview窗口中
+  plus.webview.currentWebview().append(adView);
+  //监听AdView渲染完成事件，动态调整高度
+  adView.setRenderingListener(function(e){
+    outLine('渲染广告完成: '+JSON.stringify(e));
+    if(0 != e.result){
+      outLine('渲染失败！');
+    }else{
+      //调整广告控件高度，显示广告内容
+      adView.setStyle({height:e.height+'px'});
+      //调整占位div高度，避免被广告控件盖住DOM元素
+      adDom.style.height = e.height+'px';
+    }
+  });
+  //监听用户关闭广告控件事件
+  adView.setDislikeListener(function(e){
+    console.log('用户关闭广告: '+JSON.stringify(e));
+    adView.close(),adView=null;
+    //调整占位div高度，避免关闭广告控件后显示空白区域
+    adDom.style.height = '0px';
+  });
+  //获取广告数据
+  plus.ad.getAds({adpid:'1111111111',width:'100%',count:1}, function(e){
+    outLine('获取广告成功: '+JSON.stringify(e));
+    if(!e || !e.ads || e.ads.length<1){
+      outLine('无广告数据！');
+    }else{
+      outLine('开始渲染广告');
+      //绑定并渲染广告数据
+      adView.renderingBind(e.ads[0]);
+    }
+  }, function(e){
+    outLine('获取广告失败: '+JSON.stringify(e));
+  });
+}
+
+
+// 显示广告
+function showAd(){
+  if(adView){
+    outSet('广告已经显示！');
+    return;
+  }
+  outSet('#显示广告#');
+  doCreateAd();
+}
+//更新广告
+function updateAd(){
+  outSet('#更新广告#');
+  adView&&(adView.close(),adView=null);
+  adDom&&(adDom.style.height='0px');
+  doCreateAd();
+}
+		</script>
+		<link rel="stylesheet" href="../css/common.css" type="text/css" charset="utf-8"/>
+	</head>
+	<body>
+    <br />
+    <a href="https://ask.dcloud.net.cn/article/36814">广告离线打包配置：https://ask.dcloud.net.cn/article/36814</a>
+		<br/>
+		<div class="button" onclick="showAd()">
+			显示广告
+		</div>
+		<div class="button" onclick="updateAd()">
+			更新广告
+		</div>
+		<br/>
+		<div style="background-color:#00AA00;width:100%;height:100px;">
+      <br/>
+      <p style="color:#FFFFFF" class="des">广告是原生控件渲染，层级高于所有DOM元素，使用时需要注意层级问题。</p>
+    </div>
+    <div id="ad" style="width:100%;height:0px;"></div>
+    <div style="background-color:#0000AA;width:100%;height:500px;">
+      <br/>
+      <p style="color:#FFFFFF" class="des">这是显示在广告项后面的内容，广告加载显示后自动调整位置避免被广告项覆盖。</p>
+    </div>
+		<div id="outpos"/>
+		<div id="output">
+
+		</div>
+	</body>
+</html>

@@ -1,0 +1,403 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="css/mui.css" rel="stylesheet" />
+		<script src="js/mui.js"></script>
+		<script type="text/javascript">			
+		mui.init();
+		/* 地图坐标点 */
+		let x = 0,y = 0;
+		/* websocket连接 */
+		let ws = null;
+		let websocketUrl = "ws://localhost:8999";
+		/* 心跳超时时间 */
+		let heartBeatTime = 30;
+		/* 连接锁 */
+		let connectLock = false;
+		var em=null,map=null;
+		document.addEventListener("plusready",onPlusReady,false);
+		// H5 plus事件处理
+		function onPlusReady(){
+			/* 获取定位 */
+		 	plus.geolocation.getCurrentPosition(function(one){
+				x =  one.coords.latitude;
+				y = one.coords.longitude;
+				plusReady()
+			},function(two){
+				console.log(two)
+				var data = JSON.stringify(two);
+				console.log(data)
+			},function(t){
+				console.log(t);
+			});
+			
+			let mainq = plus.android.runtimeMainActivity();
+			//为了防止快速点按返回键导致程序退出重写quit方法改为隐藏至后台  
+			        plus.runtime.quit = function(){  
+			            mainq.moveTaskToBack(false);  
+			        };  
+			//重写toast方法如果内容为 ‘再按一次退出应用’ 就隐藏应用，其他正常toast  
+			        plus.nativeUI.toast = (function(str){  
+			            if(str == '再按一次退出应用'){  
+			                mainq.moveTaskToBack(false);  
+			                return false;  
+			            }else{  
+			                console.log('不处理')  
+			            }  
+					});
+		}
+		
+		
+		
+		/* JS 调用安卓方法  */
+		document.addEventListener( "plusready",  function()
+		{
+		    var _BARCODE = 'plugintest',
+			B = window.plus.bridge;
+		    var plugintest = 
+		    {
+				
+		    	PluginTestFunction : function (Argus1, Argus2, Argus3, Argus4, successCallback, errorCallback ) 
+				{
+					var success = typeof successCallback !== 'function' ? null : function(args) 
+					{
+						successCallback(args);
+					},
+					fail = typeof errorCallback !== 'function' ? null : function(code) 
+					{
+						errorCallback(code);
+					};
+					callbackID = B.callbackId(success, fail);
+		
+					return B.exec(_BARCODE, "PluginTestFunction", [callbackID, Argus1, Argus2, Argus3, Argus4]);
+				},
+				
+				PluginTestFunctionArrayArgu : function (Argus, successCallback, errorCallback ) 
+				{
+					var success = typeof successCallback !== 'function' ? null : function(args) 
+					{
+						successCallback(args);
+					},
+					fail = typeof errorCallback !== 'function' ? null : function(code) 
+					{
+						errorCallback(code);
+					};
+					callbackID = B.callbackId(success, fail);
+					return B.exec(_BARCODE, "PluginTestFunctionArrayArgu", [callbackID, Argus]);
+				},		
+				
+		        PluginTestFunctionSync : function (Argus1, Argus2, Argus3, Argus4) 
+		        {                                	
+		            return B.execSync(_BARCODE, "PluginTestFunctionSync", [Argus1, Argus2, Argus3, Argus4]);
+		        },
+				
+		        PluginTestFunctionSyncArrayArgu : function (Argus) 
+		        {                                	
+		            return B.execSync(_BARCODE, "PluginTestFunctionSyncArrayArgu", [Argus]);
+		        }
+		    };
+		    window.plus.plugintest = plugintest;
+		}, true );
+		
+		// H5 plus事件处理
+		function plusReady(){
+			// 确保DOM解析完成
+			if(!em||!window.plus||map){return};
+			/* 创建地图对象，并移动到中心点，加入到划线数组中 */
+			map = new plus.maps.Map("map");
+			// 创建点坐标
+			map.centerAndZoom( new plus.maps.Point(y,x),18);
+			// 设置中心点
+			let firstPoint = new plus.maps.Point(y,x);
+			var markObj = new plus.maps.Marker(firstPoint);
+			markObj.setLabel("您在这里");
+			map.addOverlay(markObj);
+			changedPosition.push(firstPoint)
+		} 
+		if(window.plus){ 
+			plusReady();
+		}
+		
+		let conutdown = 0;
+		
+				setInterval(function(){
+					 conutdown++;
+					 document.getElementById('conut').innerHTML = conutdown;
+				},1000);
+		
+		// DOMContentloaded事件处理
+		document.addEventListener("DOMContentLoaded", function(){
+			em=document.getElementById("map");
+			plusReady();
+			/* 初始化websocket连接 */
+			/* ws = new WebSocket(websocketUrl);
+			
+			ws.onopen = function(evt) {
+				ws.send("Hello Server!");
+				//心跳检测重置
+				heartCheck.reset().start();     
+			};
+			
+			ws.onmessage = function(evt) {
+				heartCheck.reset().start();      //拿到任何消息都说明当前连接是正常的
+				test123();
+			};
+			
+			ws.onclose = function(evt) {
+			  console.log("Connection closed.");
+			  reconnect()
+			};     
+			
+			ws.onerror = function(e){
+			  reconnect()
+			}; */
+		},false);
+		
+		
+		// 重连机制
+		/* function reconnect(websocketUrl) {
+			if(connectLock){ return }
+			connectLock = true;
+			setTimeout(function () {     //没连接上会一直重连，设置延迟避免请求过多
+				try {
+					ws = new WebSocket(websocketUrl);
+					initEventHandle();
+				} catch (e) {
+					reconnect(websocketUrl);
+				}
+				connectLock = false;
+			}, 2000);
+		} */
+		
+		
+		// 初始化事件函数
+		/* function initEventHandle() {
+		    ws.onclose = function () {
+		        reconnect(websocketUrl);
+		    };
+		    ws.onerror = function (err) {
+		        reconnect(websocketUrl);
+		    };
+			ws.onopen = function () {
+				//心跳检测重置
+			    heartCheck.reset().start();      
+			};
+			ws.onmessage = function (msg) {    //如果获取到消息，心跳检测重置
+				//拿到任何消息都说明当前连接是正常的
+			    heartCheck.reset().start();   
+				test123();
+			    handleMsg(msg)
+			};
+		} */
+		
+		/* 处理消息，扩展用。没用就删掉了 */
+		function handleMsg(msg){
+			
+		}
+		
+		/* 心跳机制 */
+		/* var heartCheck = {
+		    timeout: heartBeatTime*1000,  //  心跳检测时长
+		    timeoutObj: null, // 定时变量
+		    reset: function () { // 重置定时
+		        clearTimeout(this.timeoutObj);
+		        return this;
+		    },
+		    start: function () { // 开启定时
+		        var self = this;
+		        this.timeoutObj = setTimeout(function () {
+		          // 心跳时间内收不到消息，主动触发连接关闭，开始重连
+		            ws.close();
+		        },this.timeout)
+		    }
+		} */
+		
+		function test123(){
+			incr = incr + 0.0001;
+			yy = yy + incr;
+			xx = xx + incr;
+			drawMap(xx,yy);
+		}
+		
+		
+		/* 划线数组序列 */
+		var changedPosition = new Array();
+		
+		/* 绘制路线 */
+		function drawMap(x,y){
+			if(map == null){
+				return;
+			}
+			/* 定位到当前位置 */
+			map.centerAndZoom( new plus.maps.Point(y,x),18);
+			let nowPoint = new plus.maps.Point(y,x);
+			/* 添加到划线数组中 */
+			changedPosition.push(nowPoint);
+			document.getElementById('point').innerHTML = changedPosition.length;
+			let nowMaker = new plus.maps.Marker(nowPoint);
+			nowMaker.setLabel("到此一游");
+			map.addOverlay(nowMaker);
+			/* 新建一条线 */
+			var changemap  = new plus.maps.Polyline( changedPosition );
+			map.addOverlay(changemap );
+			doSend("test");
+		}
+		
+		
+		function drawMaps(json){
+			let info = JSON.parse(json)
+			if(map == null){
+				return;
+			}
+			x = info.x;
+			y = info.y;
+			/* 定位到当前位置 */
+			map.centerAndZoom( new plus.maps.Point(y,x),18);
+			let nowPoint = new plus.maps.Point(y,x);
+			/* 添加到划线数组中 */
+			changedPosition.push(nowPoint);
+			let nowMaker = new plus.maps.Marker(nowPoint);
+			nowMaker.setLabel("到此一游");
+			map.addOverlay(nowMaker);
+			/* 新建一条线 */
+			var changemap  = new plus.maps.Polyline( changedPosition );
+			map.addOverlay(changemap );
+			doSend("test");
+		}
+		
+		
+		/* 发送网络连接判断JS是否存活 */
+		function doSend(info){
+			var xhr = new plus.net.XMLHttpRequest();
+			xhr.onreadystatechange = function () {
+				switch ( xhr.readyState ) {
+					case 0:
+						console.log( "xhr请求已初始化" );
+					break;
+					case 1:
+						console.log( "xhr请求已打开" );
+					break;
+					case 2:
+						console.log( "xhr请求已发送" );
+					break;
+					case 3:
+						console.log( "xhr请求已响应");
+						break;
+					case 4:
+						if ( xhr.status == 200 ) {
+							console.log( "xhr请求成功："+xhr.responseText );
+						} else {
+							console.log( "xhr请求失败："+xhr.readyState );
+						}
+						break;
+					default :
+						break;
+				}
+			}
+			xhr.open( "GET", "http://112.74.186.128:8099/maps?info="+info );
+			xhr.send();
+		}
+		
+		let incr = 0;
+		let xx = 22.752419;
+		let yy = 108.291993;
+		/* 划线定时器 */
+		/* setInterval(function(){
+			//plus.geolocation.getCurrentPosition(function(pos){
+			    //后台实时定位交互  
+			    //console.log('Geolocation\nLatitude:' + pos.coords.latitude + '\nLongitude:' + pos.coords.longitude + '\nAltitude:' + pos.coords.altitude);
+			    incr = incr + 0.0001;
+				 模拟走动 
+				yy = yy + incr;
+				xx = xx + incr;
+				drawMap(xx,yy);
+			 },function(e){  
+			    console.log("Gelocation Error: code - "+e.code+"; message - "+e.message);  
+			}); 
+		},5000);  */
+		
+			/* 调用JS发送参数消息，包含回调函数 */
+		function pluginShow() {
+		            plus.plugintest.PluginTestFunction("Html5","Plus","AsyncFunction","MultiArgument!", 
+					function( result ) {
+						alert( result[0]  + "_" + result[1]  + "_" + result[2]  + "_" + result[3] );},
+					function(result){
+							alert(result)
+							}
+					);
+		        }
+		        
+		        function pluginShowArrayArgu() {
+		            plus.plugintest.PluginTestFunctionArrayArgu( ["Html5","Plus","AsyncFunction","ArrayArgument!"], function( result ) {alert( result );},function(result){alert(result)});
+		        }
+		        
+		        function pluginGetString()
+		        {
+		            alert(plus.plugintest.PluginTestFunctionSync("Html5","Plus","SyncFunction","MultiArgument!"));
+		        }
+		        
+		        function pluginGetStringArrayArgu()
+		        {
+		            var Argus = plus.plugintest.PluginTestFunctionSyncArrayArgu(["Html5","Plus","SyncFunction","ArrayArgument!"]);
+		        }
+		 
+		</script>
+		<style>
+				#map {
+					width: 100%;
+					height: 300px;
+					position: fixed;
+					top: 0px;
+					bottom: 0px;
+					line-height: 200px;
+					text-align: center;
+					background: #FFFFFF;
+					margin-top: 20px;
+				}
+		</style>
+		
+	</head>
+	<body>
+		<!-- 顶部 -->
+		<div style="width: 100%;height: 60px;background-color: #007AFF;text-align: center;">
+			<h3 style="padding-top: 15px;">倒车雷达系统</h3>
+		</div>
+		<!-- 中间内容 -->
+		<div style="height: 200px;">
+			<div id="map"></div>
+		</div>
+		<div  style="height: 100px;"></div>
+		<div class="button" onclick="pluginShow()">PluginTestFunction()</div>
+		<div class="button" onclick="pluginShowArrayArgu()">PluginTestFunctionArrayArgu()</div>
+		<div class="button" onclick="pluginGetString()">PluginTestFunctionSync()</div>
+		<div class="button" onclick="pluginGetStringArrayArgu()">PluginTestFunctionSyncArrayArgu()</div>
+		<div>当前计数：<p id="conut"><p></div>
+		<div>当前点数：<p id="point"><p></div>
+
+		
+		<!-- 底部导航 -->
+		<div class="bottoms" style="margin-top: 205px; height: 45px;box-shadow:0 2px 2px 0 rgba(114, 124, 245, .5);text-align: center; font-size: 20px;border-top:1px solid blue ;">
+			<div onclick="backCar()"  style="z-index:100;width: 50%;height: 100%;border-right: 1px solid darkgrey;vertical-align:middle;float: left;padding-top:10px ;">倒车信息</div>
+			<div onclick="otherMesg()"  style="z-index:100;height: 100%;vertical-align:middle;text-align: center;padding-top:10px ;">地图导航</div>
+		</div>
+		
+		
+		<script type="text/javascript">
+			/* 倒车信息 */
+			function backCar(){
+				document.getElementById('map').style.display = 'none';
+				window.location.href='index.html';
+			}
+			
+			/* 其他信息 */
+			function otherMesg(){
+				window.location.href='mapShow.html';
+			}
+
+		</script>
+	</body>
+
+</html>
